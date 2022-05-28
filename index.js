@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const stripe = require("stripe")(process.env.Payment_Secket_Key);
 require("dotenv").config();
+const stripe = require("stripe")(process.env.Payment_Secket_Key);
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -31,6 +31,7 @@ async function run() {
 		const paymentCollection = client
 			.db("jerins-parlour")
 			.collection("payments");
+		const reviewCollection = client.db("jerins-parlour").collection("review");
 
 		// payment system
 		app.post("/create-payment-intent", async (req, res) => {
@@ -46,7 +47,7 @@ async function run() {
 		});
 
 		// payment confirm
-		app.patch("/booking/:id", async (req, res) => {
+		app.patch("/payment/:id", async (req, res) => {
 			const id = req.params.id;
 			const payment = req.body;
 			const filter = { _id: ObjectId(id) };
@@ -63,7 +64,7 @@ async function run() {
 			};
 
 			const result = await paymentCollection.insertOne(payment);
-			const updatedBooking = await bookinCollection.updateOne(
+			const updatedBooking = await bookingCollection.updateOne(
 				filter,
 				updatedDoc
 			);
@@ -97,6 +98,27 @@ async function run() {
 			const filter = { userEmail: email };
 			const booking = await bookingCollection.find(filter).toArray();
 			res.send(booking);
+		});
+
+		// get purchase on specific id
+		app.get("/purchase/:id", async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: ObjectId(id) };
+			const purchase = await bookingCollection.find(query).toArray();
+			res.send(purchase);
+		});
+
+		// post a review
+		app.post("/review", async (req, res) => {
+			const review = req.body;
+			const result = await reviewCollection.insertOne(review);
+			res.send(result);
+		});
+
+		// get all review
+		app.get("/review", async (req, res) => {
+			const review = await reviewCollection.find().toArray();
+			res.send(review);
 		});
 	} finally {
 	}
