@@ -77,6 +77,21 @@ async function run() {
 			res.send(service);
 		});
 
+		// post a new service
+		app.post("/service", async (req, res) => {
+			const service = req.body;
+			const result = await serviceCollection.insertOne(service);
+			res.send(result);
+		});
+
+		// delete a single service
+		app.delete("/service/:id", async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: ObjectId(id) };
+			const result = await serviceCollection.deleteOne(query);
+			res.send(result);
+		});
+
 		// get specific service
 		app.get("/service/:id", async (req, res) => {
 			const id = req.params.id;
@@ -100,12 +115,38 @@ async function run() {
 			res.send(booking);
 		});
 
+		// get all booking
+		app.get("/booking", async (req, res) => {
+			const result = await bookingCollection.find().toArray();
+			res.send(result);
+		});
+
 		// get purchase on specific id
 		app.get("/purchase/:id", async (req, res) => {
 			const id = req.params.id;
 			const query = { _id: ObjectId(id) };
 			const purchase = await bookingCollection.find(query).toArray();
 			res.send(purchase);
+		});
+
+		// update purcahces product status
+		app.put("/purchase/:id", async (req, res) => {
+			const id = req.params.id;
+			const product = req.body;
+			const filter = { _id: ObjectId(id) };
+			const options = { upsert: true };
+			const updateData = {
+				$set: {
+					status: product.status,
+				},
+			};
+
+			const result = await bookingCollection.updateOne(
+				filter,
+				updateData,
+				options
+			);
+			res.send(result);
 		});
 
 		// post a review
