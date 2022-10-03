@@ -6,6 +6,7 @@
 	"engines": {
 		"node": "14.x"
 	},
+	"vercel-build": "npm i -g node-gyp sharp",
 	"scripts": {
 		"start": "node index.js",
 		"start-dev": "nodemon index.js",
